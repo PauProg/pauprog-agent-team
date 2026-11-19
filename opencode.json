@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openai/gpt-6.1-sol",
+  "default_agent": "pauprog",
+  "snapshots": false,
+  "tool_output": {
+    "max_lines": 300,
+    "max_bytes": 30000
+  },
+  "watcher": {
+    "ignore": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.next/**",
+      "**/coverage/**",
+      "**/.git/**",
+      "**/*lock*"
+    ]
+  },
+  "permissions": [
+    { "action": "shell", "resource": "*", "effect": "ask" },
+    { "action": "edit", "resource": "*", "effect": "ask" },
+    { "action": "external_directory", "resource": "*", "effect": "ask" },
+    { "action": "shell", "resource": "git *", "effect": "deny" },
+    { "action": "shell", "resource": "git.exe *", "effect": "deny" },
+    { "action": "shell", "resource": "gh *", "effect": "deny" },
+    { "action": "shell", "resource": "gh.exe *", "effect": "deny" }
+  ],
+  "policies": [
+    { "action": "tool.use", "resource": "shell:git *", "effect": "deny" },
+    { "action": "tool.use", "resource": "shell:git.exe *", "effect": "deny" },
+    { "action": "tool.use", "resource": "shell:gh *", "effect": "deny" },
+    { "action": "tool.use", "resource": "shell:gh.exe *", "effect": "deny" },
+    { "action": "tool.use", "resource": "opencode_worktree_*:*", "effect": "deny" }
+  ]
+}
