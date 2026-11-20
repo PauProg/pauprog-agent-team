@@ -1,6 +1,6 @@
 # PauProg Agent Team
 
-Equipo OpenCode portable y agnóstico al stack: PauProg coordina; Explorer localiza; Planner diseña; Ampeter implementa; Reviewer comprueba. Inspecciona primero el manifiesto y la estructura, no usa Git y no escribe antes del OK del usuario.
+Equipo OpenCode portable y agnóstico al stack: PauProg coordina; Explorer localiza; Planner diseña; Ampeter implementa; Reviewer comprueba. Inspecciona primero el manifiesto y la estructura, usa Git solo para leer (y pull con confirmación) y no escribe antes del OK del usuario.
 
 ## Instalar en cualquier proyecto
 
@@ -18,6 +18,7 @@ El agente inspeccionará la configuración existente, presentará un plan y espe
 opencode.json                  configuración fuente
 AGENTS.md                      contrato fuente, delimitado para poder fusionarlo
 INSTALL.md                     instalación y actualización seguras
+validar-equipo.mjs             valida la instalación (solo lee): node pauprog-agent-team/validar-equipo.mjs
 .opencode/agents/pauprog.md
 .opencode/agents/explorer.md
 .opencode/agents/planner.md
@@ -39,9 +40,10 @@ OpenCode V2 no ofrece un ajuste genérico de esfuerzo `auto` para agentes ni est
 
 ## Seguridad
 
-- `git`, `git.exe`, `gh` y worktrees están denegados por permisos y políticas duras.
+- Git es de solo lectura (`status`, `diff`, `log`, `show`, `blame`, `ls-files`, `rev-parse`, `branch` para listar, `remote -v`); `git pull` pide confirmación.
+- Cualquier comando de Git que escriba o publique, `gh` y los worktrees están denegados por permisos y políticas duras, también dentro de comandos encadenados.
 - Shell y escrituras piden confirmación.
-- Explorer y Planner no pueden ejecutar comandos ni editar; Reviewer no puede editar.
+- Explorer y Planner no pueden ejecutar comandos; Explorer y Reviewer no pueden editar, y Planner solo puede editar `../docs`, que Ampeter no puede tocar.
 - PauProg no edita y Ampeter solo actúa tras el OK comunicado por PauProg.
 
 OpenCode recarga la configuración al guardarla. No hace falta reiniciarlo.

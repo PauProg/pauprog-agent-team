@@ -6,7 +6,8 @@ Estas instrucciones son para el agente que integra esta carpeta en el proyecto q
 
 - La raíz fuente es la carpeta que contiene este archivo.
 - La raíz destino es su carpeta padre, salvo que el usuario indique otra.
-- No uses Git, `gh`, worktrees ni acciones equivalentes.
+- Git solo de lectura (`status`, `diff`, `log`, `show`…); `git pull` solo con confirmación. Nada de `gh`, worktrees ni comandos de Git que escriban.
+- Al fusionar permisos, el orden importa: gana la última regla que coincide. Los bloqueos de escritura de Git y de `gh` deben quedar al final de `permissions`.
 - No crees, edites ni borres nada antes de que el usuario apruebe tu plan con un `OK` explícito.
 - No sobrescribas configuración ajena: conserva MCP, plugins, proveedores, comandos, skills e instrucciones locales.
 
@@ -28,11 +29,16 @@ Presenta al usuario un plan breve con:
 - agentes que se crearán, actualizarán o migrarán;
 - incorporación o actualización del bloque `pauprog-agent-team` en `AGENTS.md`;
 - archivos antiguos concretos que se retirarán;
-- validaciones sin Git.
+- copias de seguridad que se harán y dónde;
+- validación con `validar-equipo.mjs`, sin comandos de Git que escriban.
 
 Detente hasta recibir `OK`. La petición de instalación no cuenta como aprobación.
 
 ## 3. Instalación tras el OK
+
+### Copia de seguridad
+
+Antes de modificar o sustituir un archivo que ya existe (configuración, `AGENTS.md`, los cinco agentes, `orchestrator.md` y `executor.md`), cópialo a `.pauprog-backup/AAAA-MM-DD/` en el destino, con su ruta relativa. Si esa carpeta ya existe, usa `AAAA-MM-DD-2`. No borres copias: lo decide el usuario.
 
 ### Configuración OpenCode
 
@@ -40,7 +46,8 @@ Detente hasta recibir `OK`. La petición de instalación no cuenta como aprobaci
 - Si ya tiene `opencode.json(c)`, conserva su formato y contenido ajeno y fusiona desde la fuente:
   - `model` y `default_agent`;
   - `snapshots`, `tool_output` y los patrones que falten de `watcher.ignore`;
-  - reglas que falten de `permissions` y `policies`, sin duplicar triples `action/resource/effect`.
+  - reglas que falten de `permissions` y `policies`, sin duplicar triples `action/resource/effect`;
+  - orden de `permissions`: los bloqueos de escritura de Git y de `gh` van al final, después de cualquier regla `allow` o `ask` ajena. Si el destino tiene reglas de `shell` posteriores que los anulen, díselo al usuario en el plan.
 - Si existen configuraciones directas y bajo `.opencode/`, respeta su precedencia y modifica solo la que el plan haya identificado como configuración principal.
 
 ### Agentes
@@ -59,12 +66,16 @@ Detente hasta recibir `OK`. La petición de instalación no cuenta como aprobaci
 
 ## 4. Validación
 
-Sin usar Git:
+Ejecuta el script de la carpeta fuente (solo lee; el plan ya lo incluía):
 
-1. Comprueba que el JSON/JSONC carga y que `default_agent` es `pauprog`.
-2. Comprueba que existen exactamente los cinco agentes del equipo y usan solo los modelos documentados.
-3. Comprueba que PauProg puede delegar en `ampeter` y que no queda una referencia activa a `orchestrator` o `executor`.
-4. Comprueba que el bloque de `AGENTS.md` aparece una sola vez.
-5. Comprueba que los bloqueos de Git y worktrees siguen presentes.
+```text
+node pauprog-agent-team/validar-equipo.mjs
+```
 
-Entrega un resumen corto de archivos creados, modificados y retirados, validaciones y riesgos. No ejecutes Git.
+Sin argumento valida la carpeta padre; con una ruta, valida esa raíz. Comprueba que la configuración carga y que `default_agent` es `pauprog`, que los cinco agentes existen, son idénticos a la fuente y usan los modelos documentados (y que existen en `opencode models`), que PauProg delega en los cuatro y ningún otro delega, que Git es de solo lectura con `pull` en `ask` y `gh` denegado (también encadenado), que Planner solo escribe en `../docs/**` y Ampeter no, que el bloque de `AGENTS.md` aparece una sola vez y que no quedan referencias a `orchestrator` o `executor`.
+
+- Si hay `FALLO`, corrígelo y vuelve a ejecutarlo hasta que termine con «Validación correcta».
+- Los `AVISO` no fallan, pero cuéntaselos al usuario.
+- El script simula la regla «gana la última que coincide»; no es OpenCode. Pide además al usuario que pruebe con PauProg: `git status` funciona, `git commit` queda denegado y `git status && git commit` también.
+
+Entrega un resumen corto de archivos creados, modificados y retirados, copias de seguridad, validaciones y riesgos. No ejecutes Git que escriba.
